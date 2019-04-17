@@ -1,19 +1,15 @@
 <template>
   <section class="container">
-    <!-- <keep-alive :include="cachePage"> -->
-    <div class="wrapper">
+    <div class="wrapper" id="wrapper">
       <transition name="fade-transform"
                   mode="out-in">
         <router-view></router-view>
       </transition>
     </div>
-    <!-- </keep-alive> -->
   </section>
 </template>
 
 <script>
-import { mapMutations } from 'vuex'
-
 export default {
   name: 'AppMain',
   data() {
@@ -22,20 +18,21 @@ export default {
       flag: true,
     }
   },
-  methods: {
-    ...mapMutations(['SET_START_SCROLL', 'GET_SCROLLY']),
-  },
   watch: {
-    $route() {
-      this.SET_START_SCROLL(false)
+    $route(to) {
+      if (to.meta.blueBaseColor) {
+        console.log('blueBaseColor')
+        document.getElementById('wrapper').style.background = '#273B6F'
+      } else {
+        document.getElementById('wrapper').style.background = '#fff'
+      }
     },
   },
 }
 </script>
 
-<style scoped type="text/scss" lang="scss">
+<style lang="scss" scoped>
 .container {
-  position: relative;
   .wrapper {
     width: 100%;
     height: 100%;

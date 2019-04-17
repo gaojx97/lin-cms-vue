@@ -1,49 +1,49 @@
 <template>
   <div class="login">
     <div class="team-name">
-      <img src="@/assets/img/login/team-name.png"
-           alt="">
+      <img src="@/assets/img/login/team-name.png" alt="">
     </div>
-    <div class="form-box">
+    <div class="form-box" v-loading="loading" element-loading-background="rgba(0, 0, 0, 0)">
       <div class="title">
         <h1 title="Lin">Lin CMS</h1>
       </div>
-      <form class="login-form"
-            autocomplete="off"
-            @submit.prevent="login()">
+      <form class="login-form" autocomplete="off" @submit.prevent="throttleLogin()">
         <div class="form-item nickname">
           <span class="icon account-icon"></span>
           <input type="text"
                  v-model="form.nickname"
                  autocomplete="off"
-                 placeholder="填写用户名">
+                 placeholder="请填写用户名">
         </div>
         <div class="form-item password">
           <span class="icon secret-icon"></span>
           <input type="password"
                  v-model="form.password"
                  autocomplete="off"
-                 placeholder="填写用户登录">
+                 placeholder="请填写用户登录密码">
         </div>
-        <button class="submit-btn"
-                type="submit">登录</button>
+        <button class="submit-btn" type="submit">登录</button>
       </form>
     </div>
   </div>
 </template>
 
 <script>
-import User from 'lin/models/user'
+import User from '@/lin/models/user'
+import Utils from '@/lin/utils/util'
 import { mapActions, mapMutations } from 'vuex'
 
 export default {
   name: 'login',
   data() {
     return {
+      loading: false, // 加载动画
+      wait: 2000, // 2000ms之内不能重复发起请求
+      throttleLogin: null, // 节流登录
       form: {
         nickname: 'super',
-        password: '123456',
-        confirm_password: '123456',
+        password: 'lin123456',
+        confirm_password: 'lin123456',
         email: '2285901508@qq.com',
       },
     }
@@ -52,12 +52,15 @@ export default {
     async login() {
       const { nickname, password } = this.form
       try {
+        this.loading = true
         await User.getToken(nickname, password)
         await this.getInformation()
+        this.loading = false
         this.$router.push('/about')
         this.$message.success('登录成功')
       } catch (e) {
-        console.log('e', e)
+        this.loading = false
+        console.log(e)
       }
     },
     async getInformation() {
@@ -91,17 +94,21 @@ export default {
       setUserAuths: 'SET_USER_AUTHS',
     }),
   },
+  created() {
+    // 节流登录
+    this.throttleLogin = Utils.throttle(this.login, this.wait)
+  },
   components: {},
 }
 </script>
 
-<style type="text/scss" lang="scss">
+<style lang="scss">
 .login {
   width: 100%;
   height: 100%;
   background-size: auto;
-  background: #1b2c5f url("../../assets/img/login/login-ba.png") no-repeat
-    center center;
+  background: #1b2c5f url("../../assets/img/login/login-ba.png") no-repeat center center;
+
   .team-name {
     position: fixed;
     left: 40px;
@@ -109,17 +116,20 @@ export default {
     width: 50px;
     transform: translateY(-50%);
   }
+
   .form-box {
     position: fixed;
     left: 50%;
     top: 50%;
     transform: translate(-50%, -50%);
     width: 445px;
+
     .title {
       height: 37px;
       font-size: 30px;
       line-height: 37px;
       margin-bottom: 15%;
+
       h1 {
         padding-left: 74px;
         box-sizing: border-box;
@@ -128,18 +138,21 @@ export default {
         font-family: "HYYiSongW";
       }
     }
+
     .login-form {
       width: 100%;
+
       .form-item {
         width: 100%;
         height: 40px;
         box-sizing: border-box;
         padding-bottom: 13px;
         margin-bottom: 34px;
+
         input {
           width: 100%;
           height: 100%;
-          background-color: inherit;
+          background: transparent;
           color: #c4c9d2;
           font-size: 14px;
           padding-left: 74px;
@@ -147,16 +160,19 @@ export default {
           font-family: "HYYiSongW";
         }
       }
+
       .form-item.nickname {
         background: url("../../assets/img/login/nickname.png") no-repeat;
         background-size: 100% auto;
         background-position: left bottom;
       }
+
       .form-item.password {
         background: url("../../assets/img/login/password.png") no-repeat;
         background-size: 100% auto;
         background-position: left bottom;
       }
+
       .submit-btn {
         width: 100%;
         height: 70px;
